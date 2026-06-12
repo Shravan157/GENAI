@@ -1,0 +1,2 @@
+HumanMessage(content="I haven't received my refund for order #98765 yet, it's been 7 days.")
+AIMessage(content="Apologies for the delay. Your refund for order #98765 is still being processed and should reflect in your account within the next 2 business days.")

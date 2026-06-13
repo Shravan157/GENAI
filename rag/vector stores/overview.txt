@@ -1,0 +1,119 @@
+A vector store is a system designed to store and retrieve data represented as numerical
+vectors
+
+key features 
+
+1. storage - Ensures that vectors and their associated metadata are retained, whether in- memory
+             for quick lookups or on disk for durability and large scale use.
+
+2. similarity search - helps retrieve the vectors most similar to a query vector
+
+3. Indexing - Provide a data structure or method that enables fast similarity searches on 
+              high dimensional ectors
+
+4. CRUD Operations- Manage the lifecycle of data adding new vectors, readinig them and updating 
+                    the existing entries , removing the outdated vectors 
+        
+
+usecase 
+1. sematic search
+2. RAG
+3. Recommender system
+4. image/multimedia search
+
+Indexing - let say there are 10 lakh vector embeddings stored in the database 
+now the user query comes and we need to calculate the similarity score of that 
+query with the vecotrs stored in the database which is computationally complex 
+thing to do, so instead of doing that what we can do is we take the 10 lakh 
+vectors and we from cluster using some clustering algorithm so we create 10
+clusters where each cluster represent 1 lakh vectors so we take the mean of those
+cluster formed so 10 clusters are formed which will create 10 means across the
+each cluster and now we compare the query with the means, if some mean is showing 
+more similarity with the query then we ignore all the other clusters so we are 
+directly ignoring all the 9 lakh vectors and we are working with 1 lakh records 
+only 
+
+
+vector store vs vector databases
+
+1. vector store
+
+typically referes to a lightweight library or service that focuses on storing vectors and performing
+similarity search
+
+may not include many traditional database features like transactions, rich query languages
+or role base access control
+
+ideal for prototyping, smaller scale applications 
+
+eg : FAISS (where you store vectors and can query them by similarity but you handle persistence and scaling seperately)
+
+
+2. vector databases
+
+a full fledged database system designed to store and query vectors
+
+offers additional 'database like' features
+1. distributed architecture
+2. durability and persistance
+3. ACID Transactions
+4. Authentication and authorization 
+
+eg : quadrant , pinecone 
+
+
+
+Vector store in langchain
+
+supported stores - Langchain integrates with multiple vector stores (FAISS, Pine cone , chroma , qdrant)
+                   giving a flexibility in scale features and deployments 
+
+eg: from_documents(...) or from_texts(...)
+    add_documents(...) or add_texts(...)
+    similarity_search(query , k =)
+
+
+
+
+
+------------------------------------------------
+
+
+chroma vector store
+
+chroma is a lightweight opensource vector database that is especially friendly for local 
+development and small to medium scale production needs
+
+chroma tenancy and DB heirarchy
+
+
+
+
+ Tenant
+│
+├── Database
+│   │
+│   ├── Collection
+│   │   │
+│   │   ├── Record 1
+│   │   │   ├── id
+│   │   │   ├── document
+│   │   │   ├── embedding
+│   │   │   └── metadata
+│   │   │
+│   │   ├── Record 2
+│   │   │   ├── id
+│   │   │   ├── document
+│   │   │   ├── embedding
+│   │   │   └── metadata
+│   │   │
+│   │   └── Record 3
+│   │       ├── id
+│   │       ├── document
+│   │       ├── embedding
+│   │       └── metadata
+
+Tenant      = top-level workspace/user/organization
+Database    = logical group of collections
+Collection  = group of vector records or tables in rdbms
+Record      = one stored item containing id, text/document, embedding, and metadata

@@ -1,0 +1,30 @@
+A retriever in langchain is a component which fetches relevant document
+from a data source to a user's query
+
+There are multiple types of retrievers
+
+All retrivers in Langchain are runnables
+
+
+
+datasource(vector store,api) ------- retriever ---------- document
+                                         |
+                                         |
+                                       query 
+
+
+categories of reterievers 
+
+1. based on datasource 
+2. based on search stratergy
+
+A) based on datasource 
+1. wikipedia retriever
+
+a wikipedia retiever is a retreiver that queries the wikipedia api to 
+fetch relevant content for a given query 
+
+1. you give it a query 
+2. it sends the query to api
+3. retrievers most relevant articles
+4. it returns them as langchain document objects 

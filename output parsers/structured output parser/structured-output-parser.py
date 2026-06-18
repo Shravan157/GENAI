@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 
 load_dotenv()
+
 model = init_chat_model(
     "openai/gpt-oss-20b",
     model_provider="groq",
@@ -14,23 +15,24 @@ model = init_chat_model(
 )
 
 schema = [
-    ResponseSchema(name='name',description='name of the game',type='string'),
-    ResponseSchema(name='number of players',description='number of players playing the game',type='string'),
-    ResponseSchema(name='type of game',description='jphysical sport , logical sport or some other kind',type='string'),
-    ResponseSchema(name="duration of the game",description="duration of the game",type='string')
+    ResponseSchema(name='name',type="string",description='name of a game'),
+    ResponseSchema(name='total_players',type='integer',description='total number of players involved in game'),
+    ResponseSchema(name="game_type",type="string",description="type of game physical,mental,indoor,outdoor"),
+    ResponseSchema(name="game_duration",type="string",description="duration of the game"),
+    ResponseSchema(name="game_legends",type="List[string]",description="name of great players to play that game")
 ]
 
 parser = StructuredOutputParser(response_schemas=schema)
 
 template = ChatPromptTemplate([
     ('system','you are an helpful assistant'),
-    ('human','give the name , number of players , type of game and duration of game played in {country},consider the following\n {format_instructions}')
+    ('human','give me name,total players,type,duration of a random game played in {country}.Consider the following\n {format_instructions}')
 ])
 
 chain = template | model | parser
 
 response = chain.invoke({
-    "country" : "Finland",
+    "country" : "India",
     "format_instructions" : parser.get_format_instructions()
 })
 

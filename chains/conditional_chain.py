@@ -1,19 +1,21 @@
 from langchain.chat_models import init_chat_model
-from dotenv import load_dotenv
+from dotenv import load_dotenv 
+from langchain_core.output_parsers import StrOutputParser,PydanticOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
-from pydantic import BaseModel, Field
-from typing import Literal, Optional
 from langchain_core.runnables import RunnableBranch
+from typing import Annotated,Literal,Optional
+from pydantic import BaseModel,Field
+
 
 load_dotenv()
 
 model = init_chat_model(
-    "openai/gpt-oss-20b", model_provider="groq", temperature=0.3, max_tokens=1000
+    "openai/gpt-oss-120b",
+    model_provider='openrouter',
+    temperature = 0.5
 )
 
 review = """
-
 Product Name: Boat Rockerz 450 Bluetooth Headphones
 
 Review:
@@ -24,77 +26,51 @@ Shravan
 """
 
 
-class ReviewOutcome(BaseModel):
-    sentiment: Literal["positive", "negative"] = (
-        Field(description="classify the review in positive or negative")
-    )
-    company_name: Optional[str] = Field(
-        description="get the company name of the product", default=None
-    )
-    customer_name: Optional[str] = Field(
-        description="get the name of the customer", default=None
-    )
+class ReviewAnalysis(BaseModel):
+    sentiment : Annotated[Literal['positive','negative'],Field(description='overall sentiment of the review as positive or negative')]
+    company_name : Annotated[Optional[str],Field(default=None,description='name of the company whose product is mentioned in the review')]
+    customer_name : Annotated[Optional[str],Field(default=None,description='name of the customer who wrote the review')]
+
+review_template = ChatPromptTemplate([
+    ('system','you are an customer service ai assistant'),
+    ('human','classify the {review}.Consider the following\n {format_instructions}')
+])
+
+review_parser = PydanticOutputParser(pydantic_object=ReviewAnalysis)
+
+sentiment_chain = review_template | model | review_parser
 
 
-review_outcome_template = ChatPromptTemplate(
-    [
-        ("system", "you are an helpful customer service ai assistant"),
-        (
-            "human",
-            "classify the {review}. consider the following \n {format_instructions}",
-        ),
-    ]
-)
 
-outcome_parser = PydanticOutputParser(pydantic_object=ReviewOutcome)
 feedback_parser = StrOutputParser()
 
-sentiment_chain = review_outcome_template | model | outcome_parser
+## positive feedback prompt
+positive_feedback_template = ChatPromptTemplate([
+    ('system','you are an customer service ai assistant and a creative writer'),
+    ('human','Based on the {review} write a thankful message or response from the company to the customer')
+])
 
-positive_feeback_template = ChatPromptTemplate(
-    [
-        ("system", "you are an helpful customer service ai assistant"),
-        (
-            "human",
-            "Write a short and concise thankful response from a company to a customer.\n\nMessage:\n{review}\n\nRules:\n- Make it sound like an official company response.\n- Thank the customer politely on behalf of the company.\n- Acknowledge their positive feedback.\n- Keep it short and professional.\n- Do not over-explain.\n- Do not sound casual or personal.If possible fetch the company name from the review to sound like the company is responding to the review given",
-        ),
-    ]
+negative_feedback_template = ChatPromptTemplate([
+    ('system','you are an customer service ai assistant and a creative writer'),
+    ('human','Based on the {review} write a apology message or response from the company to the customer')
+])
+
+neutral_feedback_template = ChatPromptTemplate([
+    ('system','you are an customer service ai assistant and a creative writer'),
+    ('human','Based on the {review} write a appropriate message or response from the company to the customer')
+])
+
+branching_chain = RunnableBranch(
+    (lambda x:x.sentiment=='positive',positive_feedback_template | model | feedback_parser),
+    (lambda x:x.sentiment=='negative',positive_feedback_template | model | feedback_parser),
+    neutral_feedback_template | model | feedback_parser
 )
 
-negative_feeback_template = ChatPromptTemplate(
-    [
-        ("system", "you are an helpful customer service ai assistant"),
-        (
-            "human",
-            "Write a short and concise apology response from a company to a customer.\n\nIssue:\n{review}\n\nRules:\n- Make it sound like an official company response.\n- Apologize politely on behalf of the company.\n- Acknowledge the customer's problem.\n- Keep it short and professional.\n- Do not over-explain.\n- Do not sound casual or personal.If possible fetch the company name from the review to sound like the company is responding to the review given",
-        ),
-    ]
-)
+final_chain = sentiment_chain | branching_chain
 
-default_feeback_template = ChatPromptTemplate(
-    [
-        ("system", "you are an helpful customer service ai assistant"),
-        ("human", "write a appropriate feedback based on the {review}"),
-    ]
-)
-
-branch_chain = RunnableBranch(
-    (
-        lambda x: x.sentiment == "positive",
-        positive_feeback_template | model | feedback_parser,
-    ),
-    (
-        lambda x: x.sentiment == "negative",
-        negative_feeback_template | model | feedback_parser,
-    ),
-    default_feeback_template | model | feedback_parser,
-)
-
-final_chain = sentiment_chain | branch_chain
-
-response = final_chain.invoke(
-    {"review": review, "format_instructions": outcome_parser.get_format_instructions()}
-)
+response = final_chain.invoke({
+    "review" : review,
+    "format_instructions" : review_parser.get_format_instructions(),
+}) 
 
 print(response)
-final_chain.get_graph().print_ascii()

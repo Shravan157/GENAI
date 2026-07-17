@@ -1,16 +1,18 @@
-from langchain_community.document_loaders import DirectoryLoader,PyPDFLoader
+from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 
+# 1. Initialize the directory loader pointing to your folder
+# Pass PyPDFLoader explicitly to handle .pdf files
 loader = DirectoryLoader(
-    path=r"C:\Users\Shravan\Music\GEN AI\spring boot notes", # name of the directory
-    glob='*.pdf', # format patter (fetch all the pdf files present in folder),
-    loader_cls=PyPDFLoader # each file we find how to load it  
+    path="./your_pdf_folder",
+    glob="*.pdf",
+    loader_cls=PyPDFLoader
 )
 
-docs = loader.load()
+# 2. Trigger the generator using lazy_load()
+pdf_iterator = loader.lazy_load()
 
-docs = loader.load()
-
-print(len(docs))
-total_pages = docs[0].metadata['total_pages']
-print(docs[0].metadata)
-print(docs[0].metadata['source'])
+# 3. Stream and process each page individually
+for page in pdf_iterator:
+    print(f"Source: {page.metadata['source']} | Page: {page.metadata.get('page')}")
+    # Process text or add to vector store here without blowing up RAM
+    print(page.page_content[:100]) 

@@ -1,20 +1,20 @@
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
 
-loader = PyPDFLoader('Spring_vs_Spring_Boot.pdf')
+loader = PyPDFLoader(
+    file_path="machine_learning_overview.pdf"
+)
 
 docs = loader.load()
 
 splitter = CharacterTextSplitter(
-    chunk_size = 200,
-    chunk_overlap = 80,
-    separator= '\n'
+    chunk_size = 1000,
+    chunk_overlap=100, # keep the chunk overlap 10-20 percent of the chunk-size
+    separator = "\n\n"
 )
 
-print(docs[0].page_content)
-print('-'*50)
-chunks = splitter.split_text(docs[0].page_content)
-print(len(chunks))
-print('-'*50)
-print(chunks)
+result = splitter.split_documents(docs)
 
+print(result[0].page_content)
+print(result[1].page_content)
+print(len(result))

@@ -33,7 +33,7 @@ One more rep, one more breath, one more try."""
 #          LangChain never cuts a piece mid-way to force overlap.
 
 splitter = CharacterTextSplitter(
-    chunk_size = 150,      # max characters allowed per chunk
+    chunk_size = 150,      # for overlap use 160 and 80
     chunk_overlap = 15     # max characters allowed to carry over between chunks
 )
 

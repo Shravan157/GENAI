@@ -21,3 +21,30 @@ chunks = splitter.split_text(text)
 print(chunks)
 print('-'*30)
 print(len(chunks))
+
+
+# example from the image 
+
+# from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+# splitter = RecursiveCharacterTextSplitter(
+#     chunk_size = 10,
+#     chunk_overlap = 0
+# )
+
+# text = text = """My name is shravan
+# I am 21 years old
+
+# I live near panvel
+# how are you"""
+
+
+# result = splitter.split_text(text)
+
+
+# for index,chunk in enumerate(result,1):
+#     print(f'chunk {index}, length of the chunk is {len(chunk)}')
+#     print(f'{chunk}')
+#     print()
+    
+    

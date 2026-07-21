@@ -41,6 +41,10 @@ splitter = RecursiveCharacterTextSplitter.from_language(
 )
 
 chunks = splitter.split_text(text)
-print(chunks)
-print(len(chunks))
-print(chunks[0])
+
+print(f'Total chunks created are {len(chunks)}')
+
+for index,chunk in enumerate(chunks,1):
+    print(f'---Final Chunk{index} (Length: {len(chunk)} characters)---')
+    print(chunk)
+    print()
